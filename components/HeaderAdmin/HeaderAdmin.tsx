@@ -1,0 +1,112 @@
+'use client';
+import React, { useRef, useState, useEffect } from 'react';
+import { BellIcon, UserCircleIcon, KeyIcon, ArrowRightStartOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { useRouter } from 'next/navigation';
+
+interface HeaderAdminProps {
+  toggleSidebar: () => void;
+}
+
+const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar }) => {
+  const router = useRouter();
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+
+  const userRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userRef.current && !userRef.current.contains(event.target as Node)) setUserDropdownOpen(false);
+      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) setShowNotifications(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const username = 'Bianca';
+  const userInitials = username.charAt(0);
+
+  const handleLogoff = () => router.push('/');
+  const goToSecurity = () => router.push('/esquecer-senha');
+
+  return (
+    <header className="bg-white shadow-md h-20 px-4 md:px-6 flex items-center sticky top-0 z-40 border-b border-gray-100">
+      {/* Left: botão hambúrguer */}
+      <div className="flex items-center lg:hidden">
+        <button
+          onClick={toggleSidebar}
+          className="p-2 rounded-full hover:bg-[#0a3b5a] transition"
+          aria-label="Abrir Menu Lateral"
+        >
+          {/* Alterei stroke para azul escuro */}
+          <svg className="w-6 h-6 text-[#0a3b5a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+
+      {/* Right: notificações + usuário */}
+      <div className="flex items-center gap-3 md:gap-4 ml-auto">
+        {/* Notificações */}
+        <div className="relative" ref={notificationRef}>
+          <button
+            onClick={() => setShowNotifications(prev => !prev)}
+            className="p-2 rounded-full transition hover:bg-gray-100"
+            aria-label="Notificações"
+          >
+            <BellIcon className="w-6 h-6 text-gray-700" />
+          </button>
+          {showNotifications && (
+            <div className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl p-4 z-50 max-h-80 overflow-y-auto">
+              <h4 className="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Central de Notificações</h4>
+              <p className="text-gray-500 text-sm">Nenhuma notificação</p>
+            </div>
+          )}
+        </div>
+
+        {/* Separador */}
+        <div className="hidden sm:block h-6 w-px bg-gray-200"></div>
+
+        {/* Dropdown do usuário */}
+        <div className="relative" ref={userRef}>
+          <button
+            onClick={() => setUserDropdownOpen(prev => !prev)}
+            className="flex items-center gap-4 p-2 rounded-full transition hover:bg-gray-100"
+            aria-label="Menu do Usuário"
+          >
+            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-gray-200 text-sm font-semibold text-gray-700 ring-2 ring-gray-300">
+              {userInitials}
+            </div>
+            <span className="hidden sm:block text-gray-800 font-medium">{username}</span>
+            <ChevronDownIcon className={`w-4 h-4 text-gray-600 transition-transform duration-300 hidden sm:block ${userDropdownOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          {userDropdownOpen && (
+            <div className="absolute right-0 mt-3 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl z-50 divide-y divide-gray-100">
+              <div className="p-4 text-sm">
+                <p className="font-semibold text-gray-900">{username}</p>
+                <p className="text-gray-500 truncate">bianca.exemplo@notagest.com</p>
+              </div>
+              <div className="py-1">
+                <button onClick={() => router.push('/perfil')} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
+                  <UserCircleIcon className="w-5 h-5 mr-3 text-gray-500" /> Perfil & Configurações
+                </button>
+                <button onClick={goToSecurity} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
+                  <KeyIcon className="w-5 h-5 mr-3 text-gray-500" /> Segurança & Senha
+                </button>
+              </div>
+              <div className="py-1">
+                <button onClick={handleLogoff} className="flex items-center w-full px-4 py-3 text-left font-medium text-red-600 hover:bg-red-50">
+                  <ArrowRightStartOnRectangleIcon className="w-5 h-5 mr-3" /> Sair
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default HeaderAdmin;
