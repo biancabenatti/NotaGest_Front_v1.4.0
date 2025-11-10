@@ -128,13 +128,10 @@ const HeaderHero: React.FC = () => {
         id="home"
         className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-25 pt-22 pb-16 md:pt-30 md:pb-24 relative overflow-hidden"
       >
-        {/* fundo gradiente */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-[#0c4a6e] to-[#022c3c]" />
         <div
           className="absolute inset-0 -z-10 opacity-30 bg-[url('/hero/grid-01.svg')] bg-no-repeat bg-cover"
         />
-
-        {/* Texto */}
         <div className="w-full md:w-1/2 text-center md:text-left text-white space-y-3">
           <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-snug md:leading-tight">
             Gerencie seus{" "}
@@ -154,25 +151,6 @@ const HeaderHero: React.FC = () => {
             >
               Experimente grátis
             </Link>
-          </div>
-
-          <div className="flex flex-row gap-4 mt-6 justify-center md:justify-start flex-wrap">
-            <div className="relative w-[140px] sm:w-[200px] h-12 sm:h-16">
-              <Image
-                src="/hero/playstore.png"
-                alt="Download Play Store"
-                fill
-                className="object-contain cursor-pointer"
-              />
-            </div>
-            <div className="relative w-[140px] sm:w-[200px] h-12 sm:h-16">
-              <Image
-                src="/hero/applestore.png"
-                alt="Download App Store"
-                fill
-                className="object-contain cursor-pointer"
-              />
-            </div>
           </div>
         </div>
 

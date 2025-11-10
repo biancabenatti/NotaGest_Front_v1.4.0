@@ -1,10 +1,12 @@
-"use client";
+'use client';
 import { useState, ChangeEvent, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { FaArrowLeft } from "react-icons/fa";
+import Swal from "sweetalert2";
 import Logo from "../../assets/LogoNotaGestLogin.png";
+import { registerUser } from "../../utils/authService"; // ajuste o caminho conforme seu projeto
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -13,7 +15,6 @@ export default function Register() {
     senha: "",
     confirmarSenha: "",
   });
-  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -22,21 +23,56 @@ export default function Register() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
+    // Validação de senhas
     if (formData.senha !== formData.confirmarSenha) {
-      setError("As senhas não correspondem.");
+      Swal.fire({ icon: "error", title: "Erro", text: "As senhas não correspondem." });
+      return;
+    }
+
+    // Validação do aceite dos termos
+    const aceitouTermos = (document.getElementById('aceite-contrato') as HTMLInputElement)?.checked;
+    if (!aceitouTermos) {
+      Swal.fire({ icon: "error", title: "Erro", text: "Você deve aceitar os termos para se cadastrar." });
       return;
     }
 
     setLoading(true);
-    setError("");
 
-    console.log("Dados do formulário:", formData);
-    setTimeout(() => {
+    try {
+      // Chamada para o back-end via authService
+      const message = await registerUser({
+        nome: formData.nome,
+        email: formData.email,
+        senha: formData.senha,
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Sucesso!",
+        text: message,
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // Limpa o formulário
+      setFormData({ nome: "", email: "", senha: "", confirmarSenha: "" });
+
+      // Redireciona após 2 segundos
+      setTimeout(() => router.push("/login"), 2000);
+
+    } catch (err: any) {
+      console.error("Erro ao registrar:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Erro",
+        text: err.message || "Erro desconhecido ao cadastrar.",
+      });
+    } finally {
       setLoading(false);
-      router.push("/login");
-    }, 1000);
+    }
   };
 
   return (
@@ -44,7 +80,6 @@ export default function Register() {
 
       {/* COLUNA ESQUERDA */}
       <div className="relative flex flex-col items-center justify-center bg-[#0c4a6e] overflow-hidden">
-        {/* Fundo com grid */}
         <div className="absolute inset-0 bg-[#0c4a6e]">
           <div className="absolute inset-0 opacity-70 bg-[url('/hero/grid-01.svg')] bg-no-repeat bg-cover" />
         </div>
@@ -63,8 +98,6 @@ export default function Register() {
       {/* COLUNA DIREITA */}
       <div className="flex flex-col justify-center px-6 py-12 bg-[#f9fbfd] relative">
         <div className="w-full max-w-md mx-auto">
-
-          {/* Botão Voltar */}
           <div className="mb-6">
             <button
               onClick={() => router.push("/")}
@@ -74,7 +107,6 @@ export default function Register() {
             </button>
           </div>
 
-          {/* Título */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-semibold text-gray-800">Cadastre-se</h1>
             <p className="text-sm text-gray-500 mt-2">
@@ -82,7 +114,6 @@ export default function Register() {
             </p>
           </div>
 
-          {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="nome" className="block mb-1 text-sm font-medium text-gray-700">
@@ -149,8 +180,6 @@ export default function Register() {
                 required
               />
             </div>
-
-            {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <div className="flex items-center gap-2">
               <input id="aceite-contrato" type="checkbox" className="w-4 h-4 text-sky-600 border-gray-300 rounded" required />
