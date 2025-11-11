@@ -37,10 +37,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           };
         t = l.createElement(r);
         t.async = true;
-        t.src = "https://www.clarity.ms/tag/u4fzzhzwow"; // <-- substitui pelo SEU ID Clarity
+        t.src = "https://www.clarity.ms/tag/u4hg5mgllf"; 
         y = l.getElementsByTagName(r)[0];
         y.parentNode.insertBefore(t, y);
-      })(window, document, "clarity", "script", "u4fzzhzwow");
+      })(window, document, "clarity", "script", "u4hg5mgllf");
     }
   }, []);
 
