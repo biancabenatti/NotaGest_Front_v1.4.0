@@ -1,7 +1,6 @@
 "use client"; 
 
 import AboutUs from "../components/AboutUs/AboutUs";
-import Carousel from "../components/Carousel/Carousel";
 import ClientComments from "../components/ClientComments/ClientComments";
 import FAQ from "../components/FAQ/FAQ";
 import Header from "../components/Header/Header";
