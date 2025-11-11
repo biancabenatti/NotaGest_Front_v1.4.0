@@ -9,11 +9,13 @@ import HeaderAdmin from '../../components/HeaderAdmin/HeaderAdmin';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import AddFileView from '../../components/AddFileView/AddFileView';
 import AddPropertyView from '../../components/AddPropertyView/AddPropertyView';
-import Graphics from "../../components/Graphics/Graphics";
+import dynamic from "next/dynamic";
 import FileList from '../../components/FileList/FileList';
 import ArquivoNaoEncontrado from '/assets/arquivo_nao_encontrado.jpg';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+
+const Graphics = dynamic(() => import("../../components/Graphics/Graphics"), { ssr: false });
 
 interface FileData {
   id: number;
