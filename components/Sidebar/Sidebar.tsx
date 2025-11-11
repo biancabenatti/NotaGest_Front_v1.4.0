@@ -41,7 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         setActiveView(view);
         if (action) action();
         // fecha sidebar em mobile ao clicar em um link
-        if (window.innerWidth < 1024) toggleSidebar();
+       if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
     };
 
     const simpleLinkClass = "flex items-center w-full p-2 transition duration-150 rounded-lg text-gray-800 hover:bg-gray-100";
