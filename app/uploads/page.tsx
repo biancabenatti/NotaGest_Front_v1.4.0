@@ -48,7 +48,9 @@ const UploadsPage = () => {
 
   const fetchFiles = async () => {
     try {
-      const response = await fetch('/api/notas');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/uploads`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
       if (!response.ok) throw new Error('Erro ao buscar arquivos');
       const data = await response.json();
       setFiles(data);
@@ -109,7 +111,7 @@ const UploadsPage = () => {
 
   return (
     <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans', sans-serif] flex flex-col">
-      
+
       {/* Header */}
       <HeaderAdmin toggleSidebar={toggleSidebar} />
 
@@ -138,10 +140,10 @@ const UploadsPage = () => {
                     <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum arquivo encontrado</h2>
                   </div>
                 ) : (
-                  <FileList 
-                    files={files} 
-                    deleteFile={deleteFile} 
-                    showFiles={showFiles} 
+                  <FileList
+                    files={files}
+                    deleteFile={deleteFile}
+                    showFiles={showFiles}
                   />
                 )
               ) : (

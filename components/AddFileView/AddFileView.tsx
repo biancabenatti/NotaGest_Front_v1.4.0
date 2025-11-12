@@ -1,7 +1,7 @@
 'use client';
 import axios from 'axios';
 import { IoMdCloudUpload } from "react-icons/io";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export interface FileData {
     id: number;
@@ -32,10 +32,44 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
     const [subcategory, setSubcategory] = useState('Iluminação');
     const [property, setProperty] = useState('');
     const [uploading, setUploading] = useState(false);
+    const [properties, setProperties] = useState<{ id: string; nome: string }[]>([]);
 
+    const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
     const subcategories = ['Iluminação', 'Ferragem', 'Hidráulica', 'Acabamento', 'Pintura', 'Madeiramento', 'Outros'];
-    const exampleProperties = ['Casa Jardim América', 'Obra Centro', 'Sítio São João'];
 
+    // 🔹 Buscar imóveis do usuário logado
+    useEffect(() => {
+        const fetchProperties = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.warn('⚠️ Token não encontrado.');
+                    return;
+                }
+
+                const response = await axios.get(`${BASE_URL}/api/imoveis/nome`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+            
+                if (Array.isArray(response.data) && response.data.length > 0) {
+                    const lista = response.data.map((imovel: any) => ({
+                        id: imovel._id || imovel.id,
+                        nome: imovel.nome || imovel.name || 'Sem nome'
+                    }));
+                    setProperties(lista);
+                } else {
+                    console.warn('Nenhum imóvel encontrado para este usuário.');
+                }
+            } catch (error) {
+                console.error('❌ Erro ao buscar imóveis:', error);
+            }
+        };
+
+        fetchProperties();
+    }, [BASE_URL]);
+
+    // 🔹 Envio e salvamento do arquivo + dados
     const handleSubmit = async () => {
         if (!file || !property) {
             alert('Selecione um arquivo e um imóvel');
@@ -45,12 +79,26 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
         setUploading(true);
 
         try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Token não encontrado. Faça login novamente.');
+                return;
+            }
+
+            // 1️⃣ Enviar o arquivo para o backend
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await axios.post('/api/upload', formData);
-            const fileUrl = response.data.url;
+            const uploadResponse = await axios.post(`${BASE_URL}/uploadfile`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
 
+            const fileUrl = uploadResponse.data.url;
+
+            // 2️⃣ Montar o objeto da nota
             const newFile: FileData = {
                 id: Date.now(),
                 name: file.name,
@@ -66,8 +114,13 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                 url: fileUrl,
             };
 
-            onAddFile(newFile);
+            // 3️⃣ Enviar os dados da nota ao backend
+            await axios.post(`${BASE_URL}/uploads`, newFile, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
 
+            // 4️⃣ Atualizar estado local e limpar formulário
+            onAddFile(newFile);
             setFile(null);
             setTitle('');
             setValue('');
@@ -77,11 +130,10 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
             setCategory('Construção');
             setSubcategory('Iluminação');
 
-            alert('Nota fiscal salva com sucesso!');
-
-        } catch (error) {
-            console.error('Erro ao enviar arquivo', error);
-            alert('Erro ao enviar arquivo');
+            alert('✅ Nota fiscal salva com sucesso!');
+        } catch (error: any) {
+            console.error('❌ Erro ao salvar nota:', error);
+            alert('Erro ao salvar nota fiscal.');
         } finally {
             setUploading(false);
         }
@@ -116,7 +168,6 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <input
                             type="date"
-                            placeholder="Data da Compra"
                             value={purchaseDate}
                             onChange={(e) => setPurchaseDate(e.target.value)}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-[#0c4a6e] focus:border-[#0c4a6e]"
@@ -127,7 +178,15 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-[#0c4a6e] focus:border-[#0c4a6e]"
                         >
                             <option value="" disabled>Selecione um imóvel</option>
-                            {exampleProperties.map((item) => <option key={item} value={item}>{item}</option>)}
+                            {properties.length > 0 ? (
+                                properties.map((imovel) => (
+                                    <option key={imovel.id} value={imovel.nome}>
+                                        {imovel.nome}
+                                    </option>
+                                ))
+                            ) : (
+                                <option disabled>Nenhum imóvel encontrado</option>
+                            )}
                         </select>
                     </div>
 
@@ -153,19 +212,14 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                             onChange={(e) => setSubcategory(e.target.value)}
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-700 focus:ring-[#0c4a6e] focus:border-[#0c4a6e]"
                         >
-                            {subcategories.map((item) => <option key={item}>{item}</option>)}
+                            {subcategories.map((item) => (
+                                <option key={item}>{item}</option>
+                            ))}
                         </select>
                     </div>
 
-                    <label className="
-    group flex items-center justify-center w-full 
-    border-2 border-blue-300 rounded-lg px-6 py-4 
-    cursor-pointer transition-all duration-300
-    hover:border-blue-400 hover:bg-blue-50
-">
-                        <span className="mr-3">
-                            <IoMdCloudUpload size={24} className="text-blue-400 group-hover:text-blue-500 transition-colors" />
-                        </span>
+                    <label className="group flex items-center justify-center w-full border-2 border-blue-300 rounded-lg px-6 py-4 cursor-pointer transition-all duration-300 hover:border-blue-400 hover:bg-blue-50">
+                        <IoMdCloudUpload size={24} className="text-blue-400 group-hover:text-blue-500 transition-colors mr-3" />
                         <span className="text-blue-600 font-medium text-base">
                             {file ? file.name : 'Clique para anexar comprovante'}
                         </span>
