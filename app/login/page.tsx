@@ -24,18 +24,42 @@ export default function Login() {
     setCredentials({ ...credentials, [name]: value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
-    if (credentials.email && credentials.senha) {
-      console.log("Credenciais:", credentials);
-      setTimeout(() => {
-        setLoading(false);
-        router.push("/uploads");
-      }, 1000);
-    } else {
+    if (!credentials.email || !credentials.senha) {
       setLoading(false);
+      return alert("Preencha todos os campos!");
+    }
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: credentials.email,
+          senha: credentials.senha
+        })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Se status não for 200, mostra a mensagem do microserviço
+        setLoading(false);
+        return alert(data.message || "Erro ao logar.");
+      }
+
+      // Salva o token no localStorage
+      localStorage.setItem("token", data.token);
+
+      setLoading(false);
+      router.push("/uploads"); // Redireciona para página após login
+    } catch (error) {
+      console.error("Erro no login:", error);
+      setLoading(false);
+      alert("Erro de conexão com o servidor. Tente novamente.");
     }
   };
 

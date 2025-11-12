@@ -21,28 +21,26 @@ interface LoginResponse {
  * @returns {Promise<string>} Mensagem de sucesso.
  * @throws {Error} Mensagem de erro em caso de falha.
  */
-export async function registerUser({ nome, email, senha }: RegisterData): Promise<string> {
-    // Verifica a configuração antes de fazer a chamada
-    if (!AUTH_URL) throw new Error("URL do serviço de autenticação não configurada.");
+export async function registerUser(nome: string, email: string, senha: string) {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_AUTH_SERVICE_URL}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nome, email, senha }),
+        });
 
-    // Faz a chamada de API (POST) para a rota de registro
-    const response = await fetch(`${AUTH_URL}/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email, senha })
-    });
+        const data = await res.json();
 
-    const data = await response.json();
+        if (!res.ok) {
+            // Se o status não for 200, lança o erro com a mensagem do microserviço
+            throw new Error(data.message || "Erro ao registrar usuário.");
+        }
 
-    // Lida com códigos de resposta HTTP que indicam erro (4xx ou 5xx)
-    if (!response.ok) {
-        // Lança o erro para ser capturado no componente de UI
-        const errorMessage = data.error || data.message || "Erro desconhecido ao cadastrar.";
-        throw new Error(errorMessage);
+        return data;
+    } catch (error: any) {
+        console.error("Erro no registerUser:", error);
+        throw error;
     }
-    
-    // Retorna a mensagem de sucesso
-    return data.message;
 }
 
 /**
@@ -68,7 +66,7 @@ export async function loginUser(email: string, senha: string): Promise<LoginResp
     if (!response.ok) {
         throw new Error(data.error || data.message || "Erro desconhecido no login.");
     }
-    
+
     // Retorna o token e a mensagem de sucesso
     return data;
 }
@@ -87,7 +85,7 @@ export function decodeJwt(token: string): { id: string, email: string } {
         // Converte a string base64url para base64 padrão
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
         // Decodifica a base64 e o JSON
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
             return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
 

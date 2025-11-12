@@ -42,17 +42,13 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // Chamada para o back-end via authService
-      const message = await registerUser({
-        nome: formData.nome,
-        email: formData.email,
-        senha: formData.senha,
-      });
+      // ✅ Aqui passamos os 3 argumentos separadamente
+      const data = await registerUser(formData.nome, formData.email, formData.senha);
 
       Swal.fire({
         icon: "success",
         title: "Sucesso!",
-        text: message,
+        text: data.message || "Usuário criado com sucesso!",
         timer: 2000,
         showConfirmButton: false,
       });
