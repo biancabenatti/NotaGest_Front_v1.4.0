@@ -2,6 +2,7 @@
 import axios from 'axios';
 import { IoMdCloudUpload } from "react-icons/io";
 import React, { useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 export interface FileData {
     id: number;
@@ -51,7 +52,7 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                     headers: { Authorization: `Bearer ${token}` }
                 });
 
-            
+
                 if (Array.isArray(response.data) && response.data.length > 0) {
                     const lista = response.data.map((imovel: any) => ({
                         id: imovel._id || imovel.id,
@@ -72,7 +73,12 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
     // 🔹 Envio e salvamento do arquivo + dados
     const handleSubmit = async () => {
         if (!file || !property) {
-            alert('Selecione um arquivo e um imóvel');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Atenção!',
+                text: 'Selecione um arquivo e um imóvel antes de continuar.',
+                confirmButtonColor: '#0c4a6e'
+            });
             return;
         }
 
@@ -81,7 +87,12 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('Token não encontrado. Faça login novamente.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Token não encontrado',
+                    text: 'Faça login novamente para continuar.',
+                    confirmButtonColor: '#0c4a6e'
+                });
                 return;
             }
 
@@ -89,17 +100,34 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
             const formData = new FormData();
             formData.append('file', file);
 
-            const uploadResponse = await axios.post(`${BASE_URL}/uploadfile`, formData, {
+            const uploadResponse = await axios.post(`${BASE_URL}/api/uploadfile`, formData, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'
                 }
             });
 
-            const fileUrl = uploadResponse.data.url;
+            const filePath = uploadResponse.data.filePath;
 
-            // 2️⃣ Montar o objeto da nota
-            const newFile: FileData = {
+            // 2️⃣ Montar o objeto com todos os dados esperados pelo backend
+            const newFile = {
+                title,
+                value: parseFloat(value),
+                purchaseDate,
+                observation,
+                category,
+                subcategory,
+                property,
+                filePath
+            };
+
+            // 3️⃣ Salvar os metadados no banco
+            await axios.post(`${BASE_URL}/api/uploads`, newFile, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            // 4️⃣ Atualizar o estado local
+            onAddFile({
                 id: Date.now(),
                 name: file.name,
                 title,
@@ -111,16 +139,10 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                 property,
                 date: new Date().toLocaleDateString(),
                 size: `${(file.size / 1024).toFixed(2)} KB`,
-                url: fileUrl,
-            };
-
-            // 3️⃣ Enviar os dados da nota ao backend
-            await axios.post(`${BASE_URL}/uploads`, newFile, {
-                headers: { Authorization: `Bearer ${token}` }
+                url: filePath
             });
 
-            // 4️⃣ Atualizar estado local e limpar formulário
-            onAddFile(newFile);
+            // 5️⃣ Limpar formulário
             setFile(null);
             setTitle('');
             setValue('');
@@ -130,15 +152,27 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
             setCategory('Construção');
             setSubcategory('Iluminação');
 
-            alert('✅ Nota fiscal salva com sucesso!');
-        } catch (error: any) {
+            // ✅ Sucesso
+            Swal.fire({
+                icon: 'success',
+                title: 'Nota fiscal salva!',
+                text: 'Sua nota foi cadastrada com sucesso.',
+                confirmButtonColor: '#0c4a6e'
+            });
+
+        } catch (error) {
             console.error('❌ Erro ao salvar nota:', error);
-            alert('Erro ao salvar nota fiscal.');
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Ops...',
+                text: 'Erro ao salvar a nota fiscal.',
+                confirmButtonColor: '#0c4a6e'
+            });
         } finally {
             setUploading(false);
         }
     };
-
     return (
         <div className="bg-white min-h-screen pt-10 px-4">
             <div className="max-w-5xl w-full mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-xl border border-gray-200">
