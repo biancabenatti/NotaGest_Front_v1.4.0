@@ -8,7 +8,6 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import MapView from '../Maps/MapView'; 
-import L from 'leaflet';
 import Cards from '../Cards/Cards';
 
 interface FileData {
