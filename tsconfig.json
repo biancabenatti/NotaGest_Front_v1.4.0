@@ -29,7 +29,7 @@
     "**/*.tsx",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "components/PropertyList/PropertyList.tsx"  ],
   "exclude": [
     "node_modules",
     ".next"

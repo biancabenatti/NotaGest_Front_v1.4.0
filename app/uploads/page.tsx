@@ -14,6 +14,9 @@ import FileList from '../../components/FileList/FileList';
 import ArquivoNaoEncontrado from '/assets/arquivo_nao_encontrado.jpg';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import SegurancaView from '../../components/SegurancaView/SegurancaView';
+import PerfilView from '../../components/PerfilView/PerfilView';
+import PropertyList from '../../components/PropertyList/PropertyList';
 
 const Graphics = dynamic(() => import("../../components/Graphics/Graphics"), { ssr: false });
 
@@ -27,16 +30,30 @@ interface FileData {
   property: string;
 }
 
+interface PropertyDataForUI {
+  id: string;
+  nome: string;
+  rua?: string;
+  numero?: string;
+  bairro?: string;
+  cidade?: string;
+  estado?: string;
+  tipo?: string;
+  cep?: string;
+}
+
 const UploadsPage = () => {
   const router = useRouter();
 
   // Estados principais
   const [files, setFiles] = useState<FileData[]>([]);
-  const [activeView, setActiveView] = useState<'dashboard' | 'addFile' | 'addProperty'>('dashboard');
+  const [properties, setProperties] = useState<PropertyDataForUI[]>([]);
+  const [activeView, setActiveView] = useState<'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca'>('dashboard');
   const [showFiles, setShowFiles] = useState(false);
+  const [showProperties, setShowProperties] = useState(false);
 
   // Controle da sidebar
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // inicialmente fechado no mobile
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
   // Buscar arquivos ao carregar a página
@@ -59,10 +76,40 @@ const UploadsPage = () => {
     }
   };
 
+  const handleListProperties = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/imoveis`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      });
+      if (!response.ok) throw new Error('Erro ao buscar imóveis');
+      const data = await response.json();
+
+      // Conversão para o formato esperado pelo PropertyList
+      const formatted = data.map((p: any) => ({
+        id: String(p.id),
+        nome: p.nome || p.name || 'Sem nome',
+        rua: p.rua || '',
+        numero: p.numero || '',
+        bairro: p.bairro || '',
+        cidade: p.cidade || '',
+        estado: p.estado || '',
+        tipo: p.tipo || '',
+        cep: p.cep || ''
+      }));
+
+      setProperties(formatted);
+      setShowFiles(false);
+      setShowProperties(true);
+    } catch (error) {
+      console.error('Erro ao listar imóveis', error);
+    }
+  };
+
   // Ações
   const handleListFiles = async () => {
     await fetchFiles();
     setShowFiles(true);
+    setShowProperties(false);
   };
 
   const deleteFile = (id: number) => setFiles(prev => prev.filter(f => f.id !== id));
@@ -111,9 +158,8 @@ const UploadsPage = () => {
 
   return (
     <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans', sans-serif] flex flex-col">
-
       {/* Header */}
-      <HeaderAdmin toggleSidebar={toggleSidebar} />
+      <HeaderAdmin toggleSidebar={toggleSidebar} setActiveView={setActiveView} />
 
       <div className="flex flex-1">
         {/* Sidebar */}
@@ -122,9 +168,13 @@ const UploadsPage = () => {
           toggleSidebar={toggleSidebar}
           setActiveView={(view) => {
             setActiveView(view);
-            if (view === 'dashboard') setShowFiles(false);
+            if (view === 'dashboard') {
+              setShowFiles(false);
+              setShowProperties(false);
+            }
           }}
           handleListFiles={handleListFiles}
+          handleListProperties={handleListProperties}
           generatePDF={generatePDF}
           exportExcel={exportExcel}
         />
@@ -146,6 +196,19 @@ const UploadsPage = () => {
                     showFiles={showFiles}
                   />
                 )
+              ) : showProperties ? (
+                properties.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
+                    <Image src={ArquivoNaoEncontrado} alt="Nenhum imóvel" width={160} height={160} />
+                    <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum imóvel encontrado</h2>
+                  </div>
+                ) : (
+                  <PropertyList
+                    properties={properties}
+                    deleteProperty={(id) => setProperties(prev => prev.filter(p => p.id !== id))}
+                    showProperties={showProperties}
+                  />
+                )
               ) : (
                 <Graphics files={files} />
               )}
@@ -154,6 +217,8 @@ const UploadsPage = () => {
 
           {activeView === 'addFile' && <AddFileView onAddFile={addFile} />}
           {activeView === 'addProperty' && <AddPropertyView onAddProperty={addProperty} />}
+          {activeView === 'perfil' && <PerfilView />}
+          {activeView === 'seguranca' && <SegurancaView />}
         </main>
       </div>
     </div>

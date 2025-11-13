@@ -15,19 +15,20 @@ import {
 interface SidebarProps {
     setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty') => void;
     handleListFiles: () => void;
+    handleListProperties: () => void; 
     generatePDF: () => void;
     exportExcel: () => void;
     isSidebarOpen: boolean;
     toggleSidebar: () => void;
 }
-
 const Sidebar: React.FC<SidebarProps> = ({
     setActiveView,
     handleListFiles,
     generatePDF,
     exportExcel,
     isSidebarOpen,
-    toggleSidebar,
+    handleListProperties,
+    toggleSidebar
 }) => {
     const [openSection, setOpenSection] = useState<string | null>(null);
     const [activeLink, setActiveLink] = useState<'dashboard' | 'addFile' | 'addProperty'>('dashboard');
@@ -41,7 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         setActiveView(view);
         if (action) action();
         // fecha sidebar em mobile ao clicar em um link
-       if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
+        if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
     };
 
     const simpleLinkClass = "flex items-center w-full p-2 transition duration-150 rounded-lg text-gray-800 hover:bg-gray-100";
@@ -114,10 +115,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {openSection === 'imoveis' && (
                             <div className="ml-4 pt-1 space-y-1">
                                 <button
-                                    onClick={() => handleClickLink('addProperty')}
+                                    onClick={() => handleClickLink('dashboard', handleListProperties)}
                                     className={`${subLinkClass} flex items-center`}
                                 >
                                     <span className="w-1 h-1 rounded-full mr-3" style={{ backgroundColor: '#25aff0' }}></span>
+                                    Listar Imóveis
+                                </button>
+                                <button
+                                    onClick={() => handleClickLink('addProperty')}
+                                    className={`${subLinkClass} flex items-center`}
+                                >
+                                    <DocumentPlusIcon className="w-4 h-4 mr-3 text-gray-500" />
                                     Adicionar Imóvel
                                 </button>
                             </div>
@@ -128,13 +136,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <LinkItem Icon={ChartBarIcon} title="Relatórios" section="relatorios" />
                         {openSection === 'relatorios' && (
                             <div className="ml-4 pt-1 space-y-1">
-                                <button
-                                    onClick={() => handleClickLink('dashboard')}
-                                    className={`${subLinkClass} flex items-center`}
-                                >
-                                    <span className="w-1 h-1 rounded-full mr-3" style={{ backgroundColor: '#25aff0' }}></span>
-                                    Visão Geral
-                                </button>
                                 <button
                                     onClick={generatePDF}
                                     className={`${subLinkClass} flex items-center`}

@@ -24,7 +24,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
   const [categoryFilter, setCategoryFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 10;
+  const ITEMS_PER_PAGE = 8;
 
   if (!showFiles) return null;
 

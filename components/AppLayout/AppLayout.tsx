@@ -12,7 +12,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const handleListFiles = () => console.log('Listar arquivos');
     const generatePDF = () => console.log('Gerar PDF');
     const exportExcel = () => console.log('Exportar Excel');
-    const setActiveView = (view: 'dashboard' | 'addFile' | 'addProperty') => console.log('Ativar view', view);
+    const setActiveView = (view: 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca') => console.log('Ativar view', view);
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -26,8 +26,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             />
 
             <div className="flex-1 flex flex-col">
-                <HeaderAdmin toggleSidebar={toggleSidebar} />
-
+                <HeaderAdmin toggleSidebar={toggleSidebar} setActiveView={setActiveView} />
                 <main className="flex-1 overflow-auto p-4 bg-gray-50">
                     {children}
                 </main>

@@ -7,6 +7,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface HeaderAdminProps {
   toggleSidebar: () => void;
+  setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca') => void;
 }
 
 interface User {
@@ -14,7 +15,7 @@ interface User {
   email: string;
 }
 
-const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar }) => {
+const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar, setActiveView }) => {
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -131,10 +132,10 @@ const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar }) => {
                 <p className="text-gray-500 truncate">{user?.email}</p>
               </div>
               <div className="py-1">
-                <button onClick={() => router.push('/perfil')} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
+                <button onClick={() => { setUserDropdownOpen(false); setActiveView('perfil'); }} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
                   <UserCircleIcon className="w-5 h-5 mr-3 text-gray-500" /> Perfil & Configurações
                 </button>
-                <button onClick={goToSecurity} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
+                <button onClick={() => { setUserDropdownOpen(false); setActiveView('seguranca'); }} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
                   <KeyIcon className="w-5 h-5 mr-3 text-gray-500" /> Segurança & Senha
                 </button>
               </div>
