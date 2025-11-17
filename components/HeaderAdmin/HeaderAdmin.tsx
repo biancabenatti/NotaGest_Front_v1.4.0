@@ -84,7 +84,7 @@ const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar, setActiveView 
       <div className="flex items-center lg:hidden">
         <button
           onClick={toggleSidebar}
-          className="p-2 rounded-full hover:bg-[#0a3b5a] transition"
+          className="p-2 rounded-full hover:bg-[#e4e4e4] transition"
           aria-label="Abrir Menu Lateral"
         >
           <svg className="w-6 h-6 text-[#0a3b5a]" fill="none" stroke="currentColor" viewBox="0 0 24 24">

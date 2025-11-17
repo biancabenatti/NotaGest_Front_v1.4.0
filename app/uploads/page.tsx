@@ -31,7 +31,7 @@ interface FileData {
 }
 
 interface PropertyDataForUI {
-  id: string;
+  _id: string;
   nome: string;
   rua?: string;
   numero?: string;
@@ -86,7 +86,7 @@ const UploadsPage = () => {
 
       // Conversão para o formato esperado pelo PropertyList
       const formatted = data.map((p: any) => ({
-        id: String(p.id),
+        _id: String(p._id),
         nome: p.nome || p.name || 'Sem nome',
         rua: p.rua || '',
         numero: p.numero || '',
@@ -205,7 +205,7 @@ const UploadsPage = () => {
                 ) : (
                   <PropertyList
                     properties={properties}
-                    deleteProperty={(id) => setProperties(prev => prev.filter(p => p.id !== id))}
+                    deleteProperty={(_id) => setProperties(prev => prev.filter(p => p._id !== _id))}
                     showProperties={showProperties}
                   />
                 )
