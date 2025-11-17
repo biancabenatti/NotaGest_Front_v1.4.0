@@ -10,7 +10,7 @@ interface FileData {
   purchaseDate: string;
   category: string;
   subcategory: string;
-  property: string;
+  property: string | { _id: string; nome: string };
 }
 
 interface FileListProps {
@@ -28,8 +28,17 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
 
   if (!showFiles) return null;
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('pt-BR');
+  };
+
   const filteredFiles = useMemo(() => {
-    let filtered = files.filter(f => f.title.toLowerCase().includes(search.toLowerCase()));
+    let filtered = files.filter(f =>
+      f.title.toLowerCase().includes(search.toLowerCase())
+    );
     if (categoryFilter) {
       filtered = filtered.filter(f => f.category === categoryFilter);
     }
@@ -41,14 +50,13 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
     currentPage * ITEMS_PER_PAGE
   );
 
-  const totalPages = Math.ceil(filteredFiles.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(filteredFiles.length / ITEMS_PER_PAGE));
 
   return (
     <div className="p-4 mt-6">
       
-      {/* Filtros e busca */}
+      {/* Filtros */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-8">
-        {/* Busca */}
         <input
           type="text"
           placeholder="Buscar por título..."
@@ -57,12 +65,11 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
           className="border px-3 py-2 rounded w-full md:w-1/3"
         />
 
-        {/* Filtro de categoria */}
-        <div className="w-full md:w-1/4 relative">
+        <div className="w-full md:w-1/4">
           <select
             value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
-            className="border px-3 py-2 rounded w-full text-left"
+            className="border px-3 py-2 rounded w-full"
           >
             <option value="">Todas as categorias</option>
             {[...new Set(files.map(f => f.category))].map(cat => (
@@ -86,15 +93,24 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
               <th className="px-4 py-2 text-left font-medium text-gray-700">Ações</th>
             </tr>
           </thead>
+
           <tbody className="divide-y divide-gray-100">
             {paginatedFiles.map(file => (
               <tr key={file.id} className="hover:bg-gray-50 transition-colors duration-150">
                 <td className="px-4 py-2">{file.title}</td>
                 <td className="px-4 py-2">R$ {file.value.toFixed(2)}</td>
-                <td className="px-4 py-2">{file.purchaseDate}</td>
-                <td className="px-4 py-2">{file.property}</td>
+                <td className="px-4 py-2">{formatDate(file.purchaseDate)}</td>
+
+                {/* IMÓVEL — agora com nome correto */}
+                <td className="px-4 py-2">
+                  {typeof file.property === 'object'
+                    ? file.property.nome
+                    : file.property}
+                </td>
+
                 <td className="px-4 py-2">{file.category}</td>
                 <td className="px-4 py-2">{file.subcategory}</td>
+
                 <td className="px-4 py-2 flex gap-2">
                   <button
                     className="text-blue-600 hover:text-blue-800 p-1 rounded border border-gray-200"
@@ -102,6 +118,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
                   >
                     <IoEyeOutline size={20} />
                   </button>
+
                   <button
                     className="text-red-600 hover:text-red-800 p-1 rounded border border-gray-200"
                     onClick={() => deleteFile(file.id)}
@@ -112,6 +129,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
               </tr>
             ))}
           </tbody>
+
         </table>
       </div>
 
@@ -124,7 +142,9 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
         >
           Anterior
         </button>
+
         <span>Página {currentPage} de {totalPages}</span>
+
         <button
           className="px-3 py-1 border rounded disabled:opacity-50"
           disabled={currentPage === totalPages}

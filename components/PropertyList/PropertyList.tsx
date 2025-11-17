@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { IoTrashBinSharp } from 'react-icons/io5';
+import Swal from 'sweetalert2';
 
 interface PropertyDataForUI {
   _id: string;
@@ -24,22 +25,30 @@ interface PropertyListProps {
 const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperties, showProperties }) => {
 
   const [properties, setProperties] = useState(initialProperties);
-
   const [search, setSearch] = useState('');
   const [tipoFilter, setTipoFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const ITEMS_PER_PAGE = 10;
-
   const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
   if (!showProperties) return null;
 
-  // 👉 Função para deletar direto no backend
+  // 🗑 Função de deletar com SweetAlert2
   const handleDeleteProperty = async (_id: string) => {
-    console.log("🆔 ID recebido no DELETE:", _id);
-    const confirmar = confirm("Tem certeza que deseja excluir este imóvel?");
-    if (!confirmar) return;
+
+    // 🔥 Popup de confirmação
+    const result = await Swal.fire({
+      title: 'Excluir imóvel?',
+      text: 'Deseja realmente excluir este imóvel?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, excluir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const response = await fetch(`${BASE_URL}/api/imoveis/${_id}`, {
@@ -49,15 +58,38 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperti
         },
       });
 
+      // ❌ Se der erro, mostra sweetalert com a mensagem do backend
       if (!response.ok) {
-        alert("Erro ao excluir o imóvel.");
+        const data = await response.json().catch(() => ({ message: "Erro ao excluir." }));
+
+        Swal.fire({
+          title: 'Erro!',
+          text: data.message || 'Não foi possível excluir o imóvel.',
+          icon: 'error',
+          confirmButtonText: 'OK'
+        });
+
         return;
       }
 
-      // Remove localmente da tabela
-      setProperties(prev => prev.filter(item => item._id !== _id && item._id !== _id));
+      // 🟢 Sucesso
+      Swal.fire({
+        title: 'Excluído!',
+        text: 'O imóvel foi excluído com sucesso.',
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+
+      // Atualiza a tabela localmente
+      setProperties(prev => prev.filter(item => item._id !== _id));
 
     } catch (error) {
+      Swal.fire({
+        title: 'Erro!',
+        text: 'Ocorreu um erro ao tentar excluir o imóvel.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
       console.error("Erro ao deletar imóvel:", error);
     }
   };
@@ -80,10 +112,9 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperti
   return (
     <div className="p-4 mt-6">
 
-      {/* Filtros e busca */}
+      {/* Filtros */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-8">
 
-        {/* Busca */}
         <input
           type="text"
           placeholder="Buscar por nome..."
@@ -92,7 +123,6 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperti
           className="border px-3 py-2 rounded w-full md:w-1/3"
         />
 
-        {/* Filtro de tipo */}
         <div className="w-full md:w-1/4 relative">
           <select
             value={tipoFilter}
@@ -128,21 +158,17 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperti
                 <td className="px-4 py-2">{prop.cidade}</td>
                 <td className="px-4 py-2">{prop.estado}</td>
                 <td className="px-4 py-2">{prop.tipo}</td>
-                <td className="px-4 py-2 flex gap-2">
 
-                  {/* Botão de deletar */}
+                {/* Botão de deletar */}
+                <td className="px-4 py-2 flex gap-2">
                   <button
                     className="text-red-600 hover:text-red-800 p-1 rounded border border-gray-200"
-                    onClick={() => {
-                      console.log("👉 prop na lista:", prop);
-                      console.log("👉 prop._id:", prop._id);
-                      handleDeleteProperty(prop._id);
-                    }}
+                    onClick={() => handleDeleteProperty(prop._id)}
                   >
                     <IoTrashBinSharp size={20} />
                   </button>
-
                 </td>
+
               </tr>
             ))}
           </tbody>

@@ -214,7 +214,7 @@ const AddFileView: React.FC<AddFileViewProps> = ({ onAddFile }) => {
                             <option value="" disabled>Selecione um imóvel</option>
                             {properties.length > 0 ? (
                                 properties.map((imovel) => (
-                                    <option key={imovel.id} value={imovel.nome}>
+                                    <option key={imovel.id} value={imovel.id}>
                                         {imovel.nome}
                                     </option>
                                 ))
