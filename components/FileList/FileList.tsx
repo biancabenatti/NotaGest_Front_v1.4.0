@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { IoTrashBinSharp, IoEyeOutline } from 'react-icons/io5';
+import { IoTrashBinSharp, IoDownloadOutline, IoPencilOutline } from 'react-icons/io5';
 
 interface FileData {
   id: number;
@@ -52,9 +52,19 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
 
   const totalPages = Math.max(1, Math.ceil(filteredFiles.length / ITEMS_PER_PAGE));
 
+  const handleEditProperty = (id: number) => {
+    console.log('Editar arquivo', id);
+    // Aqui você pode abrir um modal de edição ou redirecionar para uma página de edição
+  };
+
+  const handleDownloadProperty = (id: number) => {
+    console.log('Baixar arquivo', id);
+    // Aqui você pode gerar um download, PDF ou CSV do arquivo
+  };
+
   return (
     <div className="p-4 mt-6">
-      
+
       {/* Filtros */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-8">
         <input
@@ -111,20 +121,33 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
                 <td className="px-4 py-2">{file.category}</td>
                 <td className="px-4 py-2">{file.subcategory}</td>
 
+                {/* Botões de ações */}
                 <td className="px-4 py-2 flex gap-2">
+
+                  {/* Botão de editar */}
                   <button
                     className="text-blue-600 hover:text-blue-800 p-1 rounded border border-gray-200"
-                    onClick={() => alert(JSON.stringify(file, null, 2))}
+                    onClick={() => handleEditProperty(file.id)}
                   >
-                    <IoEyeOutline size={20} />
+                    <IoPencilOutline size={20} />
                   </button>
 
+                  {/* Botão de baixar */}
+                  <button
+                    className="text-green-600 hover:text-green-800 p-1 rounded border border-gray-200"
+                    onClick={() => handleDownloadProperty(file.id)}
+                  >
+                    <IoDownloadOutline size={20} />
+                  </button>
+
+                  {/* Botão de deletar */}
                   <button
                     className="text-red-600 hover:text-red-800 p-1 rounded border border-gray-200"
                     onClick={() => deleteFile(file.id)}
                   >
                     <IoTrashBinSharp size={20} />
                   </button>
+
                 </td>
               </tr>
             ))}
