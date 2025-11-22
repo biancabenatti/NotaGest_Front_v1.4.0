@@ -185,12 +185,7 @@ const FileList: React.FC<FileListProps> = ({ files }) => {
                 <td className="px-4 py-2">{file.category}</td>
                 <td className="px-4 py-2">{file.subcategory}</td>
                 <td className="px-4 py-2 flex gap-2">
-                  <button
-                    className="text-blue-600 hover:text-blue-800 p-1 rounded border border-gray-200"
-                    onClick={() => handleEditProperty(file._id)}
-                  >
-                    <IoPencilOutline size={20} />
-                  </button>
+                
                   <button
                     className="text-green-600 hover:text-green-800 p-1 rounded border border-gray-200"
                     onClick={() => handleDownloadProperty(file)}
