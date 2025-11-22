@@ -16,6 +16,7 @@ export default function Register() {
     confirmarSenha: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState(false); // estado do modal
   const router = useRouter();
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -42,7 +43,6 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // ✅ Aqui passamos os 3 argumentos separadamente
       const data = await registerUser(formData.nome, formData.email, formData.senha);
 
       Swal.fire({
@@ -53,10 +53,8 @@ export default function Register() {
         showConfirmButton: false,
       });
 
-      // Limpa o formulário
       setFormData({ nome: "", email: "", senha: "", confirmarSenha: "" });
 
-      // Redireciona após 2 segundos
       setTimeout(() => router.push("/login"), 2000);
 
     } catch (err: any) {
@@ -177,10 +175,22 @@ export default function Register() {
               />
             </div>
 
+            {/* Checkbox com modal */}
             <div className="flex items-center gap-2">
-              <input id="aceite-contrato" type="checkbox" className="w-4 h-4 text-sky-600 border-gray-300 rounded" required />
+              <input
+                id="aceite-contrato"
+                type="checkbox"
+                className="w-4 h-4 text-sky-600 border-gray-300 rounded"
+                required
+              />
               <label htmlFor="aceite-contrato" className="text-sm text-gray-600">
-                Aceito os termos
+                Aceito os{" "}
+                <span
+                  className="text-blue-500 cursor-pointer underline"
+                  onClick={() => setShowModal(true)}
+                >
+                  termos
+                </span>
               </label>
             </div>
 
@@ -205,6 +215,48 @@ export default function Register() {
           </div>
         </div>
       </div>
+
+      {/* MODAL DOS TERMOS */}
+      {showModal && (
+  // Fundo transparente para destacar o modal
+  <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/20">
+    {/* Conteúdo do Modal */}
+    <div className="bg-white p-8 rounded-xl shadow-2xl w-11/12 max-w-xl transform transition-all duration-300 scale-100 opacity-100">
+      
+      {/* Título */}
+      <h2 className="text-2xl font-bold mb-5 text-gray-800 border-b pb-2">Termos de Uso</h2>
+      
+      {/* Corpo do modal com scroll */}
+      <div className="text-gray-700 text-sm max-h-80 overflow-y-auto pr-2 space-y-3">
+        <p>
+          Bem-vindo à plataforma NotaGest! Estes Termos de Uso estabelecem as regras e condições para a utilização de nossos serviços.
+        </p>
+        <p>
+          Ao criar uma conta ou acessar nossos sistemas, você concorda em usar a plataforma de forma responsável, seguindo todas as leis aplicáveis e respeitando os direitos de terceiros.
+        </p>
+        <p>
+          Você é responsável por manter a confidencialidade de sua senha e dados de login. Qualquer atividade realizada em sua conta é de sua inteira responsabilidade.
+        </p>
+        <p>
+          Reservamo-nos o direito de atualizar estes termos a qualquer momento. Alterações serão comunicadas e seu uso continuado da plataforma constitui aceitação das novas regras.
+        </p>
+        <p>
+          O uso indevido do sistema, tentativa de burlar funcionalidades ou violação de direitos autorais poderá resultar em bloqueio de acesso ou ações legais cabíveis.
+        </p>
+      </div>
+      
+      {/* Botão centralizado */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setShowModal(false)}
+          className="px-6 py-2 bg-[#0c4a6e] text-white font-medium rounded-lg shadow-md hover:bg-[#08324b] focus:outline-none focus:ring-2 focus:ring-[#25aff0] focus:ring-offset-2 transition duration-150 ease-in-out"
+        >
+          Li e Aceito os Termos
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }
