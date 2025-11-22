@@ -5,32 +5,39 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+
 import HeaderAdmin from '../../components/HeaderAdmin/HeaderAdmin';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import AddFileView from '../../components/AddFileView/AddFileView';
 import AddPropertyView from '../../components/AddPropertyView/AddPropertyView';
 import dynamic from "next/dynamic";
+
 import FileList from '../../components/FileList/FileList';
+import PropertyList from '../../components/PropertyList/PropertyList';
+
 import ArquivoNaoEncontrado from '/assets/arquivo_nao_encontrado.jpg';
 import Image from 'next/image';
+
 import { useRouter } from 'next/navigation';
+
 import SegurancaView from '../../components/SegurancaView/SegurancaView';
 import PerfilView from '../../components/PerfilView/PerfilView';
-import PropertyList from '../../components/PropertyList/PropertyList';
 
 const Graphics = dynamic(() => import("../../components/Graphics/Graphics"), { ssr: false });
 
-interface FileData {
-  id: number;
+
+export interface FileData {
+  _id: string;
   title: string;
   value: number;
   purchaseDate: string;
+  property: string;
   category: string;
   subcategory: string;
-  property: string;
+  filePath: string;
 }
 
-interface PropertyDataForUI {
+export interface PropertyDataForUI {
   _id: string;
   nome: string;
   rua?: string;
@@ -42,7 +49,14 @@ interface PropertyDataForUI {
   cep?: string;
 }
 
-type View = 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca' | 'files' | 'properties';
+type View =
+  | 'dashboard'
+  | 'addFile'
+  | 'addProperty'
+  | 'perfil'
+  | 'seguranca'
+  | 'files'
+  | 'properties';
 
 const UploadsPage = () => {
   const router = useRouter();
@@ -58,25 +72,36 @@ const UploadsPage = () => {
     fetchFiles();
   }, []);
 
+  /* -------------------------
+      FETCH FILES - SEM ALTERAR O BACK
+  --------------------------*/
   const fetchFiles = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/uploads`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+
       if (!response.ok) throw new Error('Erro ao buscar arquivos');
+
       const data = await response.json();
       setFiles(data);
+
     } catch (error) {
       console.error('Erro ao buscar arquivos', error);
     }
   };
 
+  /* -------------------------
+      LISTAR IMÓVEIS
+  --------------------------*/
   const handleListProperties = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/imoveis`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
+
       if (!response.ok) throw new Error('Erro ao buscar imóveis');
+
       const data = await response.json();
 
       const formatted = data.map((p: any) => ({
@@ -93,25 +118,44 @@ const UploadsPage = () => {
 
       setProperties(formatted);
       setActiveView('properties');
+
     } catch (error) {
       console.error('Erro ao listar imóveis', error);
     }
   };
 
+  /* -------------------------
+      LISTAR ARQUIVOS
+  --------------------------*/
   const handleListFiles = async () => {
     await fetchFiles();
     setActiveView('files');
   };
 
-  const deleteFile = (id: number) => setFiles(prev => prev.filter(f => f.id !== id));
-  const addFile = (file: FileData) => setFiles(prev => [...prev, file]);
+  /* -------------------------
+      DELETE FILE 
+  --------------------------*/
+  const deleteFile = (_id: string) =>
+    setFiles(prev => prev.filter(f => f._id !== _id));
+
+  /* -------------------------
+      ADD FILE (COMPATÍVEL COM AddFileView)
+  --------------------------*/
+  const addFile = (file: any) =>
+    setFiles(prev => [...prev, file]);
+
   const addProperty = (msg: string) => console.log(msg);
 
+  /* -------------------------
+      GERAR PDF
+  --------------------------*/
   const generatePDF = () => {
     if (files.length === 0) return alert("Nenhum arquivo para gerar PDF!");
+
     const doc = new jsPDF();
     doc.setFontSize(16);
     doc.text('Relatório de Arquivos', 14, 15);
+
     autoTable(doc, {
       startY: 25,
       head: [['Título', 'Valor', 'Data da Compra', 'Imóvel', 'Categoria', 'Subcategoria']],
@@ -126,13 +170,18 @@ const UploadsPage = () => {
       styles: { fontSize: 10, cellPadding: 2 },
       headStyles: { fillColor: [8, 47, 73], textColor: [255, 255, 255] },
     });
+
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
     window.open(url);
   };
 
+  /* -------------------------
+      EXPORTAR EXCEL
+  --------------------------*/
   const exportExcel = () => {
     if (files.length === 0) return alert("Nenhum arquivo para exportar!");
+
     const ws = XLSX.utils.json_to_sheet(files.map(f => ({
       Título: f.title,
       Valor: f.value.toFixed(2),
@@ -141,12 +190,17 @@ const UploadsPage = () => {
       Categoria: f.category,
       Subcategoria: f.subcategory
     })));
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Arquivos");
+
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     saveAs(new Blob([wbout], { type: "application/octet-stream" }), "Relatorio_Arquivos.xlsx");
   };
 
+  /* -------------------------
+      RENDER
+  --------------------------*/
   return (
     <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans', sans-serif] flex flex-col">
       <HeaderAdmin toggleSidebar={toggleSidebar} setActiveView={setActiveView} />
@@ -163,28 +217,34 @@ const UploadsPage = () => {
         />
 
         <main className="flex-1 p-6">
+
           {activeView === 'dashboard' && <Graphics files={files} />}
-          
+
           {activeView === 'files' && (
-            files.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
-                <Image src={ArquivoNaoEncontrado} alt="Nenhum arquivo" width={160} height={160} />
-                <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum arquivo encontrado</h2>
-              </div>
-            ) : (
-              <FileList files={files} deleteFile={deleteFile} />
-            )
+            files.length === 0 ?
+              (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
+                  <Image src={ArquivoNaoEncontrado} alt="Nenhum arquivo" width={160} height={160} />
+                  <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum arquivo encontrado</h2>
+                </div>
+              ) : (
+                <FileList files={files} deleteFile={deleteFile} />
+              )
           )}
 
           {activeView === 'properties' && (
-            properties.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
-                <Image src={ArquivoNaoEncontrado} alt="Nenhum imóvel" width={160} height={160} />
-                <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum imóvel encontrado</h2>
-              </div>
-            ) : (
-              <PropertyList properties={properties} deleteProperty={(_id) => setProperties(prev => prev.filter(p => p._id !== _id))} />
-            )
+            properties.length === 0 ?
+              (
+                <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
+                  <Image src={ArquivoNaoEncontrado} alt="Nenhum imóvel" width={160} height={160} />
+                  <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum imóvel encontrado</h2>
+                </div>
+              ) : (
+                <PropertyList
+                  properties={properties}
+                  deleteProperty={(_id) => setProperties(prev => prev.filter(p => p._id !== _id))}
+                />
+              )
           )}
 
           {activeView === 'addFile' && <AddFileView onAddFile={addFile} />}

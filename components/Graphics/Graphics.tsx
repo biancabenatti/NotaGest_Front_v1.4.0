@@ -11,12 +11,14 @@ import MapView from '../Maps/MapView';
 import Cards from '../Cards/Cards';
 
 interface FileData {
-  id: number;
+  _id: string;
   title: string;
   value: number;
+  purchaseDate: string;
   category: string;
   subcategory: string;
   property: string;
+  filePath: string;
 }
 
 interface GraphicsProps {

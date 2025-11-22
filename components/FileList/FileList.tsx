@@ -16,8 +16,9 @@ interface FileData {
   property: string | { _id: string; nome: string };
 }
 
-interface FileListProps {
+export interface FileListProps {
   files: FileData[];
+  deleteFile?: (_id: string) => void; 
 }
 
 const FileList: React.FC<FileListProps> = ({ files }) => {
@@ -40,45 +41,47 @@ const FileList: React.FC<FileListProps> = ({ files }) => {
     return d.toLocaleDateString('pt-BR');
   };
 
-  const handleDownloadProperty = async (id: string) => {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('Token não encontrado');
+  const handleDownloadProperty = async (file: any) => {
+  if (!file.filePath) {
+    Swal.fire('Erro!', 'Arquivo sem caminho válido!', 'error');
+    return;
+  }
 
-      const response = await fetch(`${BASE_URL}/api/uploads/downloads/${id}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+  try {
+    const url = `${BASE_URL}/uploads/${file.filePath}`;
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || 'Erro ao baixar arquivo');
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${localStorage.getItem("token")}`
       }
+    });
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement('a');
-      link.href = url;
-
-
-      const disposition = response.headers.get('content-disposition');
-      let filename = 'arquivo.pdf';
-      if (disposition && disposition.includes('filename=')) {
-        filename = disposition.split('filename=')[1].replace(/"/g, '');
-      }
-
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error: any) {
-      Swal.fire('Erro!', 'Não foi possível baixar o arquivo: ' + error.message, 'error');
+    if (!response.ok) {
+      throw new Error("Erro ao baixar arquivo");
     }
-  };
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+
+    // Nome do arquivo
+    const fileExtension = file.filePath.split('.').pop();
+    link.download = `${file.title}.${fileExtension}`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (error) {
+    Swal.fire("Erro!", "Não foi possível baixar o arquivo!", "error");
+  }
+};
+
+
   const handleDelete = async (id: string) => {
     const confirm = await Swal.fire({
       title: 'Tem certeza?',
@@ -190,7 +193,7 @@ const FileList: React.FC<FileListProps> = ({ files }) => {
                   </button>
                   <button
                     className="text-green-600 hover:text-green-800 p-1 rounded border border-gray-200"
-                    onClick={() => handleDownloadProperty(file._id)}
+                    onClick={() => handleDownloadProperty(file)}
                   >
                     <IoDownloadOutline size={20} />
                   </button>
