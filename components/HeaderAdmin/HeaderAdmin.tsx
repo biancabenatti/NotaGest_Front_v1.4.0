@@ -94,21 +94,7 @@ const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar, setActiveView 
       </div>
 
       <div className="flex items-center gap-3 md:gap-4 ml-auto">
-        <div className="relative" ref={notificationRef}>
-          <button
-            onClick={() => setShowNotifications(prev => !prev)}
-            className="p-2 rounded-full transition hover:bg-gray-100"
-            aria-label="Notificações"
-          >
-            <BellIcon className="w-6 h-6 text-gray-700" />
-          </button>
-          {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-2xl p-4 z-50 max-h-80 overflow-y-auto">
-              <h4 className="text-lg font-bold text-gray-800 mb-3 border-b pb-2">Central de Notificações</h4>
-              <p className="text-gray-500 text-sm">Nenhuma notificação</p>
-            </div>
-          )}
-        </div>
+      
 
         <div className="hidden sm:block h-6 w-px bg-gray-200"></div>
 
@@ -133,11 +119,9 @@ const HeaderAdmin: React.FC<HeaderAdminProps> = ({ toggleSidebar, setActiveView 
               </div>
               <div className="py-1">
                 <button onClick={() => { setUserDropdownOpen(false); setActiveView('perfil'); }} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
-                  <UserCircleIcon className="w-5 h-5 mr-3 text-gray-500" /> Perfil & Configurações
+                  <UserCircleIcon className="w-5 h-5 mr-3 text-gray-500" /> Perfil & Segurança
                 </button>
-                <button onClick={() => { setUserDropdownOpen(false); setActiveView('seguranca'); }} className="flex items-center w-full px-4 py-3 hover:bg-gray-50 text-gray-700">
-                  <KeyIcon className="w-5 h-5 mr-3 text-gray-500" /> Segurança & Senha
-                </button>
+              
               </div>
               <div className="py-1">
                 <button onClick={handleLogoff} className="flex items-center w-full px-4 py-3 text-left font-medium text-red-600 hover:bg-red-50">
