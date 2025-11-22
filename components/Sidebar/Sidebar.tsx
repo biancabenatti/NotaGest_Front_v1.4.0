@@ -13,9 +13,9 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
-    setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty') => void;
+     setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties' | 'perfil' | 'seguranca') => void;
     handleListFiles: () => void;
-    handleListProperties: () => void; 
+    handleListProperties: () => void;
     generatePDF: () => void;
     exportExcel: () => void;
     isSidebarOpen: boolean;
@@ -31,19 +31,18 @@ const Sidebar: React.FC<SidebarProps> = ({
     toggleSidebar
 }) => {
     const [openSection, setOpenSection] = useState<string | null>(null);
-    const [activeLink, setActiveLink] = useState<'dashboard' | 'addFile' | 'addProperty'>('dashboard');
+    const [activeLink, setActiveLink] = useState<'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties' | 'perfil' | 'seguranca'>('dashboard');
 
     const toggleSection = (section: string) => {
         setOpenSection(prev => (prev === section ? null : section));
     };
 
-    const handleClickLink = (view: 'dashboard' | 'addFile' | 'addProperty', action?: () => void) => {
-        setActiveLink(view);
-        setActiveView(view);
-        if (action) action();
-        // fecha sidebar em mobile ao clicar em um link
-        if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
-    };
+    const handleClickLink = (view: 'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties', action?: () => void) => {
+    setActiveLink(view);
+    setActiveView(view);
+    if (action) action();
+    if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
+};
 
     const simpleLinkClass = "flex items-center w-full p-2 transition duration-150 rounded-lg text-gray-800 hover:bg-gray-100";
     const subLinkClass = "text-left text-sm w-full py-2 px-2 rounded-lg transition duration-150 hover:bg-gray-50 text-gray-600";
@@ -93,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {openSection === 'arquivos' && (
                             <div className="ml-4 pt-1 space-y-1">
                                 <button
-                                    onClick={() => handleClickLink('dashboard', handleListFiles)}
+                                    onClick={() => handleClickLink('files', handleListFiles)}
                                     className={`${subLinkClass} flex items-center`}
                                 >
                                     <span className="w-1 h-1 rounded-full mr-3" style={{ backgroundColor: '#25aff0' }}></span>
@@ -115,7 +114,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         {openSection === 'imoveis' && (
                             <div className="ml-4 pt-1 space-y-1">
                                 <button
-                                    onClick={() => handleClickLink('dashboard', handleListProperties)}
+                                    onClick={() => handleClickLink('properties', handleListProperties)}
                                     className={`${subLinkClass} flex items-center`}
                                 >
                                     <span className="w-1 h-1 rounded-full mr-3" style={{ backgroundColor: '#25aff0' }}></span>

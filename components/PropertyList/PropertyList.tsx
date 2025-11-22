@@ -19,10 +19,9 @@ interface PropertyDataForUI {
 interface PropertyListProps {
   properties: PropertyDataForUI[];
   deleteProperty: (_id: string) => void;
-  showProperties: boolean;
 }
 
-const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperties, showProperties }) => {
+const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperties}) => {
 
   const [properties, setProperties] = useState(initialProperties);
   const [search, setSearch] = useState('');
@@ -32,7 +31,7 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties: initialProperti
   const ITEMS_PER_PAGE = 10;
   const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  if (!showProperties) return null;
+
 
   // 🗑 Função de deletar com SweetAlert2
   const handleDeleteProperty = async (_id: string) => {

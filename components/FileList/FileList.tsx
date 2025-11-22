@@ -1,10 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { IoTrashBinSharp, IoDownloadOutline, IoPencilOutline } from 'react-icons/io5';
+import Swal from 'sweetalert2';
+
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 interface FileData {
-  id: number;
+  _id: string;
   title: string;
   value: number;
   purchaseDate: string;
@@ -15,18 +18,20 @@ interface FileData {
 
 interface FileListProps {
   files: FileData[];
-  deleteFile: (id: number) => void;
-  showFiles: boolean;
 }
 
-const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => {
+const FileList: React.FC<FileListProps> = ({ files }) => {
+  const [filesState, setFilesState] = useState<FileData[]>(files);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   const ITEMS_PER_PAGE = 8;
 
-  if (!showFiles) return null;
+  // Atualiza o estado interno se os props mudarem
+  useEffect(() => {
+    setFilesState(files);
+  }, [files]);
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '';
@@ -35,15 +40,86 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
     return d.toLocaleDateString('pt-BR');
   };
 
+  const handleDownloadProperty = async (id: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) throw new Error('Token não encontrado');
+
+      const response = await fetch(`${BASE_URL}/api/uploads/downloads/${id}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Erro ao baixar arquivo');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement('a');
+      link.href = url;
+
+
+      const disposition = response.headers.get('content-disposition');
+      let filename = 'arquivo.pdf';
+      if (disposition && disposition.includes('filename=')) {
+        filename = disposition.split('filename=')[1].replace(/"/g, '');
+      }
+
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error: any) {
+      Swal.fire('Erro!', 'Não foi possível baixar o arquivo: ' + error.message, 'error');
+    }
+  };
+  const handleDelete = async (id: string) => {
+    const confirm = await Swal.fire({
+      title: 'Tem certeza?',
+      text: 'Você não poderá reverter esta ação!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, deletar!',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    try {
+      const response = await fetch(`${BASE_URL}/api/uploads/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || 'Erro ao deletar arquivo');
+      }
+
+      // Remove o arquivo do estado local
+      setFilesState(prev => prev.filter(f => f._id !== id));
+
+      Swal.fire('Deletado!', 'O arquivo foi deletado com sucesso.', 'success');
+    } catch (error: any) {
+      Swal.fire('Erro!', 'Não foi possível deletar o arquivo: ' + error.message, 'error');
+    }
+  };
+
   const filteredFiles = useMemo(() => {
-    let filtered = files.filter(f =>
+    let filtered = filesState.filter(f =>
       f.title.toLowerCase().includes(search.toLowerCase())
     );
-    if (categoryFilter) {
-      filtered = filtered.filter(f => f.category === categoryFilter);
-    }
+    if (categoryFilter) filtered = filtered.filter(f => f.category === categoryFilter);
     return filtered;
-  }, [files, search, categoryFilter]);
+  }, [filesState, search, categoryFilter]);
 
   const paginatedFiles = filteredFiles.slice(
     (currentPage - 1) * ITEMS_PER_PAGE,
@@ -52,15 +128,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
 
   const totalPages = Math.max(1, Math.ceil(filteredFiles.length / ITEMS_PER_PAGE));
 
-  const handleEditProperty = (id: number) => {
-    console.log('Editar arquivo', id);
-    // Aqui você pode abrir um modal de edição ou redirecionar para uma página de edição
-  };
-
-  const handleDownloadProperty = (id: number) => {
-    console.log('Baixar arquivo', id);
-    // Aqui você pode gerar um download, PDF ou CSV do arquivo
-  };
+  const handleEditProperty = (id: string) => console.log('Editar arquivo', id);
 
   return (
     <div className="p-4 mt-6">
@@ -74,7 +142,6 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
           onChange={e => setSearch(e.target.value)}
           className="border px-3 py-2 rounded w-full md:w-1/3"
         />
-
         <div className="w-full md:w-1/4">
           <select
             value={categoryFilter}
@@ -82,7 +149,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
             className="border px-3 py-2 rounded w-full"
           >
             <option value="">Todas as categorias</option>
-            {[...new Set(files.map(f => f.category))].map(cat => (
+            {[...new Set(filesState.map(f => f.category))].map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
           </select>
@@ -103,56 +170,40 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
               <th className="px-4 py-2 text-left font-medium text-gray-700">Ações</th>
             </tr>
           </thead>
-
           <tbody className="divide-y divide-gray-100">
             {paginatedFiles.map(file => (
-              <tr key={file.id} className="hover:bg-gray-50 transition-colors duration-150">
+              <tr key={file._id} className="hover:bg-gray-50 transition-colors duration-150">
                 <td className="px-4 py-2">{file.title}</td>
                 <td className="px-4 py-2">R$ {file.value.toFixed(2)}</td>
                 <td className="px-4 py-2">{formatDate(file.purchaseDate)}</td>
-
-                {/* IMÓVEL — agora com nome correto */}
                 <td className="px-4 py-2">
-                  {typeof file.property === 'object'
-                    ? file.property.nome
-                    : file.property}
+                  {typeof file.property === 'object' ? file.property.nome : file.property}
                 </td>
-
                 <td className="px-4 py-2">{file.category}</td>
                 <td className="px-4 py-2">{file.subcategory}</td>
-
-                {/* Botões de ações */}
                 <td className="px-4 py-2 flex gap-2">
-
-                  {/* Botão de editar */}
                   <button
                     className="text-blue-600 hover:text-blue-800 p-1 rounded border border-gray-200"
-                    onClick={() => handleEditProperty(file.id)}
+                    onClick={() => handleEditProperty(file._id)}
                   >
                     <IoPencilOutline size={20} />
                   </button>
-
-                  {/* Botão de baixar */}
                   <button
                     className="text-green-600 hover:text-green-800 p-1 rounded border border-gray-200"
-                    onClick={() => handleDownloadProperty(file.id)}
+                    onClick={() => handleDownloadProperty(file._id)}
                   >
                     <IoDownloadOutline size={20} />
                   </button>
-
-                  {/* Botão de deletar */}
                   <button
                     className="text-red-600 hover:text-red-800 p-1 rounded border border-gray-200"
-                    onClick={() => deleteFile(file.id)}
+                    onClick={() => handleDelete(file._id)}
                   >
                     <IoTrashBinSharp size={20} />
                   </button>
-
                 </td>
               </tr>
             ))}
           </tbody>
-
         </table>
       </div>
 
@@ -165,9 +216,7 @@ const FileList: React.FC<FileListProps> = ({ files, deleteFile, showFiles }) => 
         >
           Anterior
         </button>
-
         <span>Página {currentPage} de {totalPages}</span>
-
         <button
           className="px-3 py-1 border rounded disabled:opacity-50"
           disabled={currentPage === totalPages}

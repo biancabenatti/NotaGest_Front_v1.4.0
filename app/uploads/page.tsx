@@ -42,24 +42,19 @@ interface PropertyDataForUI {
   cep?: string;
 }
 
+type View = 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca' | 'files' | 'properties';
+
 const UploadsPage = () => {
   const router = useRouter();
 
-  // Estados principais
   const [files, setFiles] = useState<FileData[]>([]);
   const [properties, setProperties] = useState<PropertyDataForUI[]>([]);
-  const [activeView, setActiveView] = useState<'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca'>('dashboard');
-  const [showFiles, setShowFiles] = useState(false);
-  const [showProperties, setShowProperties] = useState(false);
-
-  // Controle da sidebar
+  const [activeView, setActiveView] = useState<View>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   const toggleSidebar = () => setIsSidebarOpen(prev => !prev);
 
-  // Buscar arquivos ao carregar a página
   useEffect(() => {
-    setActiveView('dashboard');
-    setShowFiles(false);
     fetchFiles();
   }, []);
 
@@ -84,7 +79,6 @@ const UploadsPage = () => {
       if (!response.ok) throw new Error('Erro ao buscar imóveis');
       const data = await response.json();
 
-      // Conversão para o formato esperado pelo PropertyList
       const formatted = data.map((p: any) => ({
         _id: String(p._id),
         nome: p.nome || p.name || 'Sem nome',
@@ -98,18 +92,15 @@ const UploadsPage = () => {
       }));
 
       setProperties(formatted);
-      setShowFiles(false);
-      setShowProperties(true);
+      setActiveView('properties');
     } catch (error) {
       console.error('Erro ao listar imóveis', error);
     }
   };
 
-  // Ações
   const handleListFiles = async () => {
     await fetchFiles();
-    setShowFiles(true);
-    setShowProperties(false);
+    setActiveView('files');
   };
 
   const deleteFile = (id: number) => setFiles(prev => prev.filter(f => f.id !== id));
@@ -158,61 +149,42 @@ const UploadsPage = () => {
 
   return (
     <div className="min-h-screen bg-white font-['Plus_Jakarta_Sans', sans-serif] flex flex-col">
-      {/* Header */}
       <HeaderAdmin toggleSidebar={toggleSidebar} setActiveView={setActiveView} />
 
       <div className="flex flex-1">
-        {/* Sidebar */}
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           toggleSidebar={toggleSidebar}
-          setActiveView={(view) => {
-            setActiveView(view);
-            if (view === 'dashboard') {
-              setShowFiles(false);
-              setShowProperties(false);
-            }
-          }}
+          setActiveView={setActiveView}
           handleListFiles={handleListFiles}
           handleListProperties={handleListProperties}
           generatePDF={generatePDF}
           exportExcel={exportExcel}
         />
 
-        {/* Conteúdo principal */}
         <main className="flex-1 p-6">
-          {activeView === 'dashboard' && (
-            <>
-              {showFiles ? (
-                files.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
-                    <Image src={ArquivoNaoEncontrado} alt="Nenhum arquivo" width={160} height={160} />
-                    <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum arquivo encontrado</h2>
-                  </div>
-                ) : (
-                  <FileList
-                    files={files}
-                    deleteFile={deleteFile}
-                    showFiles={showFiles}
-                  />
-                )
-              ) : showProperties ? (
-                properties.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
-                    <Image src={ArquivoNaoEncontrado} alt="Nenhum imóvel" width={160} height={160} />
-                    <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum imóvel encontrado</h2>
-                  </div>
-                ) : (
-                  <PropertyList
-                    properties={properties}
-                    deleteProperty={(_id) => setProperties(prev => prev.filter(p => p._id !== _id))}
-                    showProperties={showProperties}
-                  />
-                )
-              ) : (
-                <Graphics files={files} />
-              )}
-            </>
+          {activeView === 'dashboard' && <Graphics files={files} />}
+          
+          {activeView === 'files' && (
+            files.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
+                <Image src={ArquivoNaoEncontrado} alt="Nenhum arquivo" width={160} height={160} />
+                <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum arquivo encontrado</h2>
+              </div>
+            ) : (
+              <FileList files={files} deleteFile={deleteFile} />
+            )
+          )}
+
+          {activeView === 'properties' && (
+            properties.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-[60vh] text-center bg-white p-6">
+                <Image src={ArquivoNaoEncontrado} alt="Nenhum imóvel" width={160} height={160} />
+                <h2 className="text-lg font-semibold text-gray-700 mt-4">Nenhum imóvel encontrado</h2>
+              </div>
+            ) : (
+              <PropertyList properties={properties} deleteProperty={(_id) => setProperties(prev => prev.filter(p => p._id !== _id))} />
+            )
           )}
 
           {activeView === 'addFile' && <AddFileView onAddFile={addFile} />}
