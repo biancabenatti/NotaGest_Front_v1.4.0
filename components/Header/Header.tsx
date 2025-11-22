@@ -25,23 +25,18 @@ const HeaderHero: React.FC = () => {
         className={`fixed top-0 z-50 w-full transition-all duration-500 ease-in-out ${sticky ? "bg-[#0c4a6e] shadow-lg" : "bg-transparent"
           }`}
       >
-        <div className="flex items-center justify-between h-20 px-4 sm:px-6 md:px-10 mx-auto max-w-6xl">
+        <div className="flex items-center justify-between h-30 px-4 sm:px-2 md:px-2 mx-auto max-w-6xl gap-2.5">
           <Image src={Logo} alt="Logo" className="h-10 w-auto" priority />
 
           {/* MENU DESKTOP */}
-          <nav className="hidden md:flex">
+          <nav className="hidden md:flex ">
             <ul className="flex items-center gap-8 text-white">
-              {[
-                { label: "Home", to: "home" },
-                { label: "Dicas", to: "tips" },
-                { label: "Como Funciona", to: "how-it-work-section" },
-                { label: "Sobre Nós", to: "about-us-section" },
-                { label: "FAQ", to: "faq-section" },
-              ].map((item) => (
-                <li
-                  key={item.to}
-                  className="cursor-pointer hover:text-[#fde047] transition"
-                >
+              {[{ label: "Home", to: "home" },
+              { label: "Dicas", to: "tips" },
+              { label: "Como Funciona", to: "how-it-work-section" },
+              { label: "Sobre Nós", to: "about-us-section" },
+              { label: "FAQ", to: "faq-section" }].map((item) => (
+                <li key={item.to} className="cursor-pointer hover:text-[#fde047] transition">
                   <ScrollLink to={item.to} smooth duration={500}>
                     {item.label}
                   </ScrollLink>
@@ -79,17 +74,12 @@ const HeaderHero: React.FC = () => {
         {isOpen && (
           <div className="md:hidden bg-[#0c4a6e] px-6 pb-6 shadow-lg animate-slide-down">
             <ul className="flex flex-col gap-4 text-white">
-              {[
-                { label: "Home", to: "home" },
-                { label: "Dicas", to: "tips" },
-                { label: "Como Funciona", to: "how-it-work-section" },
-                { label: "Sobre Nós", to: "about-us-section" },
-                { label: "FAQ", to: "faq-section" },
-              ].map((item) => (
-                <li
-                  key={item.to}
-                  className="cursor-pointer hover:text-[#fde047] transition"
-                >
+              {[{ label: "Home", to: "home" },
+              { label: "Dicas", to: "tips" },
+              { label: "Como Funciona", to: "how-it-work-section" },
+              { label: "Sobre Nós", to: "about-us-section" },
+              { label: "FAQ", to: "faq-section" }].map((item) => (
+                <li key={item.to} className="cursor-pointer hover:text-[#fde047] transition">
                   <ScrollLink
                     to={item.to}
                     smooth
@@ -126,25 +116,28 @@ const HeaderHero: React.FC = () => {
       {/* HERO SECTION */}
       <section
         id="home"
-        className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-25 pt-22 pb-16 md:pt-30 md:pb-24 relative overflow-hidden"
+        className="flex flex-col md:flex-row items-center justify-between px-4 sm:px-6 md:px-10 min-h-screen pt-20 pb-16 md:pt-0 md:pb-0 relative overflow-hidden"
       >
+        {/* BACKGROUND */}
         <div className="absolute inset-0 -z-20 bg-gradient-to-b from-[#0c4a6e] to-[#022c3c]" />
         <div
           className="absolute inset-0 -z-10 opacity-30 bg-[url('/hero/grid-01.svg')] bg-no-repeat bg-cover"
         />
-        <div className="w-full md:w-1/2 text-center md:text-left text-white space-y-3">
-          <h1 className="text-2xl sm:text-3xl md:text-5xl font-extrabold leading-snug md:leading-tight">
+
+        {/* TEXTO HERO */}
+        <div className="w-full md:w-1/2 text-center md:text-left text-white space-y-5 flex flex-col justify-center h-full ml-14 mr-14">
+          <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-6xl font-extrabold leading-snug md:leading-tight">
             Gerencie seus{" "}
             <span className="text-[#25aff0]">Cupons Fiscais</span> de Forma{" "}
             <span className="text-[#25aff0]">Rápida</span> e{" "}
             <span className="text-[#25aff0]">Segura</span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-lg text-gray-200 mt-5 mb-5">
+          <p className="text-base sm:text-md md:text-lg text-gray-200 mt-5 ">
             A maneira mais prática e profissional de controlar seus documentos fiscais.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 mt-4 justify-center md:justify-start">
+          <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center md:justify-start">
             <Link
               href="/register"
               className="w-full sm:w-auto bg-[#25aff0] text-black py-3 px-6 rounded-md font-semibold hover:opacity-80 transition"
@@ -154,19 +147,21 @@ const HeaderHero: React.FC = () => {
           </div>
         </div>
 
-        {/* Imagem Hero */}
-        <div className="hidden md:flex w-full md:w-1/2 relative mt-10 md:mt-0 justify-center items-center">
-          <div className="relative w-full max-w-[30rem] aspect-square">
+        {/* IMAGEM HERO */}
+        <div className="hidden md:flex w-full md:w-1/2 flex-1 mt-10 md:mt-0 justify-center items-center">
+          <div className="relative w-full h-[400px] md:h-[600px] lg:h-[60vh] max-w-[50rem]">
             <div className="absolute w-[40rem] h-[40rem] bg-white/10 rounded-full blur-3xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
             <Image
               src={require("../../assets/Img_Home.png")}
               alt="Imagem Hero"
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               className="object-contain"
               priority
             />
           </div>
         </div>
+
       </section>
     </div>
   );

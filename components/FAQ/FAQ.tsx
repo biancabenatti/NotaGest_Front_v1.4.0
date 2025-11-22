@@ -33,7 +33,7 @@ const FAQ = () => {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row items-center justify-center gap-10 px-6 py-10">
+    <div id="faq-section" className="flex flex-col lg:flex-row items-center justify-center gap-10 px-6 py-10 ">
       {/* Imagem lateral */}
       <div className="flex-shrink-0">
         <Image
