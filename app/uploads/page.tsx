@@ -5,21 +5,16 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-
 import HeaderAdmin from '../../components/HeaderAdmin/HeaderAdmin';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import AddFileView from '../../components/AddFileView/AddFileView';
 import AddPropertyView from '../../components/AddPropertyView/AddPropertyView';
 import dynamic from "next/dynamic";
-
 import FileList from '../../components/FileList/FileList';
 import PropertyList from '../../components/PropertyList/PropertyList';
-
 import ArquivoNaoEncontrado from '/assets/arquivo_nao_encontrado.jpg';
 import Image from 'next/image';
-
 import { useRouter } from 'next/navigation';
-
 import SegurancaView from '../../components/SegurancaView/SegurancaView';
 import PerfilView from '../../components/PerfilView/PerfilView';
 
@@ -31,7 +26,7 @@ export interface FileData {
   title: string;
   value: number;
   purchaseDate: string;
-  property: string;
+  property: string | { _id: string; nome: string }; 
   category: string;
   subcategory: string;
   filePath: string;
@@ -150,31 +145,46 @@ const UploadsPage = () => {
       GERAR PDF
   --------------------------*/
   const generatePDF = () => {
-    if (files.length === 0) return alert("Nenhum arquivo para gerar PDF!");
+  if (files.length === 0) return alert("Nenhum arquivo para gerar PDF!");
 
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text('Relatório de Arquivos', 14, 15);
+  const doc = new jsPDF();
+  doc.setFontSize(16);
+  doc.text('Relatório de Arquivos', 14, 15);
 
-    autoTable(doc, {
-      startY: 25,
-      head: [['Título', 'Valor', 'Data da Compra', 'Imóvel', 'Categoria', 'Subcategoria']],
-      body: files.map(file => [
-        file.title,
-        `R$ ${file.value.toFixed(2)}`,
-        file.purchaseDate,
-        file.property,
-        file.category,
-        file.subcategory,
-      ]),
-      styles: { fontSize: 10, cellPadding: 2 },
-      headStyles: { fillColor: [8, 47, 73], textColor: [255, 255, 255] },
-    });
+  const rows = files.map(file => {
+    // Corrigir o imóvel (property)
+    const propertyName =
+      typeof file.property === "object"
+        ? file.property.nome
+        : file.property;
 
-    const pdfBlob = doc.output('blob');
-    const url = URL.createObjectURL(pdfBlob);
-    window.open(url);
-  };
+    // Corrigir data
+    const formattedDate = file.purchaseDate
+      ? new Date(file.purchaseDate).toLocaleDateString('pt-BR')
+      : '';
+
+    return [
+      file.title,
+      `R$ ${file.value.toFixed(2)}`,
+      formattedDate,
+      propertyName,
+      file.category,
+      file.subcategory
+    ];
+  });
+
+  autoTable(doc, {
+    startY: 25,
+    head: [['Título', 'Valor', 'Data da Compra', 'Imóvel', 'Categoria', 'Subcategoria']],
+    body: rows,
+    styles: { fontSize: 10, cellPadding: 2 },
+    headStyles: { fillColor: [8, 47, 73], textColor: [255, 255, 255] },
+  });
+
+  const pdfBlob = doc.output('blob');
+  const url = URL.createObjectURL(pdfBlob);
+  window.open(url);
+};
 
   /* -------------------------
       EXPORTAR EXCEL
