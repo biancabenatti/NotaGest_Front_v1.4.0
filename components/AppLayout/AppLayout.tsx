@@ -10,9 +10,12 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     // Funções simuladas para sidebar
     const handleListFiles = () => console.log('Listar arquivos');
+    const handleListProperties = () => console.log('Listar propriedades');
     const generatePDF = () => console.log('Gerar PDF');
     const exportExcel = () => console.log('Exportar Excel');
-    const setActiveView = (view: 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca') => console.log('Ativar view', view);
+    const setActiveView = (
+        view: 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca' | 'files' | 'properties'
+    ) => console.log('Ativar view', view);
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -20,6 +23,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 isSidebarOpen={isSidebarOpen}
                 toggleSidebar={toggleSidebar}
                 handleListFiles={handleListFiles}
+                handleListProperties={handleListProperties}
                 generatePDF={generatePDF}
                 exportExcel={exportExcel}
                 setActiveView={setActiveView}
