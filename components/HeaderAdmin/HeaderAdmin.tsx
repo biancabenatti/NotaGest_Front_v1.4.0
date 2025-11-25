@@ -1,6 +1,6 @@
 'use client';
 import React, { useRef, useState, useEffect } from 'react';
-import { BellIcon, UserCircleIcon, KeyIcon, ArrowRightStartOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, KeyIcon, ArrowRightStartOnRectangleIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
