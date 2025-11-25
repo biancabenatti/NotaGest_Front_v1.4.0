@@ -57,11 +57,3 @@ html {
   filter: invert(1) hue-rotate(180deg);
   background: black !important;
 }
-
-@layer utilities {
-  .fixed { position: fixed; }
-  .right-4 { right: 1rem; }
-  .top-1\/2 { top: 50%; }
-  .-translate-y-1\/2 { transform: translateY(-50%); }
-}
-
