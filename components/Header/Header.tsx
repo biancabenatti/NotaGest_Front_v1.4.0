@@ -6,6 +6,8 @@ import { Link as ScrollLink } from "react-scroll";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import Logo from "../../assets/LogoHorizontal.png";
+import { Contrast } from "lucide-react";
+
 
 const HeaderHero: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,11 +28,44 @@ const HeaderHero: React.FC = () => {
           }`}
       >
         <div className="flex items-center justify-between h-30 px-4 sm:px-2 md:px-2 mx-auto max-w-6xl gap-2.5">
+          <div className="flex items-center gap-2 ml-1">
+            {/* Aumentar Fonte */}
+            <button
+              onClick={() => {
+                document.body.style.fontSize =
+                  (parseFloat(getComputedStyle(document.body).fontSize) + 1) + "px";
+              }}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur text-white flex items-center justify-center hover:bg-white/30 transition shadow-md"
+            >
+              <span className="text-lg font-bold">A+</span>
+            </button>
+
+            {/* Diminuir Fonte */}
+            <button
+              onClick={() => {
+                document.body.style.fontSize =
+                  (parseFloat(getComputedStyle(document.body).fontSize) - 1) + "px";
+              }}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur text-white flex items-center justify-center hover:bg-white/30 transition shadow-md"
+            >
+              <span className="text-lg font-bold">A-</span>
+            </button>
+
+            {/* Alto Contraste */}
+            <button
+              onClick={() => {
+                document.body.classList.toggle("high-contrast");
+              }}
+              className="w-10 h-10 rounded-full bg-white/20 backdrop-blur text-white flex items-center justify-center hover:bg-white/30 transition shadow-md"
+            >
+              <Contrast size={20} />
+            </button>
+          </div>
           <Image src={Logo} alt="Logo" className="h-10 w-auto" priority />
 
           {/* MENU DESKTOP */}
           <nav className="hidden md:flex ">
-            <ul className="flex items-center gap-8 text-white">
+            <ul className="flex items-center gap-6 text-white">
               {[{ label: "Home", to: "home" },
               { label: "Dicas", to: "tips" },
               { label: "Como Funciona", to: "how-it-work-section" },
@@ -126,7 +161,7 @@ const HeaderHero: React.FC = () => {
 
         {/* TEXTO HERO */}
         <div className="w-full md:w-1/2 text-center md:text-left text-white space-y-5 flex flex-col justify-center h-full ml-14 mr-14">
-          <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-6xl font-extrabold leading-snug md:leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-4xl lg:text-5xl font-extrabold leading-snug mt-20 md:leading-tight">
             Gerencie seus{" "}
             <span className="text-[#25aff0]">Cupons Fiscais</span> de Forma{" "}
             <span className="text-[#25aff0]">Rápida</span> e{" "}

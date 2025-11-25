@@ -30,3 +30,38 @@ html {
     repeating-linear-gradient(0deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 20px),
     repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 1px, transparent 1px 20px);
 }
+
+/* Alto contraste */
+.high-contrast {
+  filter: contrast(150%) brightness(120%);
+}
+
+/* Daltonismo */
+.protanopia {
+  filter: url('#protanopia');
+}
+
+.deuteranopia {
+  filter: url('#deuteranopia');
+}
+
+.tritanopia {
+  filter: url('#tritanopia');
+}
+
+.high-contrast {
+  filter: invert(1) contrast(1.2);
+}
+
+.high-contrast {
+  filter: invert(1) hue-rotate(180deg);
+  background: black !important;
+}
+
+@layer utilities {
+  .fixed { position: fixed; }
+  .right-4 { right: 1rem; }
+  .top-1\/2 { top: 50%; }
+  .-translate-y-1\/2 { transform: translateY(-50%); }
+}
+
