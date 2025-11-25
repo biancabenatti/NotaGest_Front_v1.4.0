@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface SidebarProps {
-     setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties' | 'perfil' | 'seguranca') => void;
+    setActiveView: (view: 'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties' | 'perfil' | 'seguranca') => void;
     handleListFiles: () => void;
     handleListProperties: () => void;
     generatePDF: () => void;
@@ -37,12 +37,15 @@ const Sidebar: React.FC<SidebarProps> = ({
         setOpenSection(prev => (prev === section ? null : section));
     };
 
-    const handleClickLink = (view: 'dashboard' | 'addFile' | 'addProperty' | 'files' | 'properties', action?: () => void) => {
-    setActiveLink(view);
-    setActiveView(view);
-    if (action) action();
-    if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
-};
+    const handleClickLink = (
+        view: 'dashboard' | 'addFile' | 'addProperty' | 'perfil' | 'seguranca' | 'files' | 'properties',
+        action?: () => void
+    ) => {
+        setActiveLink(view);
+        setActiveView(view);
+        if (action) action();
+        if (typeof window !== "undefined" && window.innerWidth < 1024) toggleSidebar();
+    };
 
     const simpleLinkClass = "flex items-center w-full p-2 transition duration-150 rounded-lg text-gray-800 hover:bg-gray-100";
     const subLinkClass = "text-left text-sm w-full py-2 px-2 rounded-lg transition duration-150 hover:bg-gray-50 text-gray-600";
