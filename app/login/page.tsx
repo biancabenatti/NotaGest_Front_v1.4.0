@@ -6,6 +6,7 @@ import Image from "next/image";
 import Logo from "../../assets/LogoNotaGestLogin.png";
 import { MdOutlineVisibility, MdOutlineVisibilityOff } from "react-icons/md";
 import { FaArrowLeft } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 type Credentials = {
   email: string;
@@ -28,7 +29,11 @@ export default function Login() {
     e.preventDefault();
 
     if (!credentials.email || !credentials.senha) {
-      return alert("Preencha todos os campos!");
+      return Swal.fire({
+        icon: "warning",
+        title: "Campos incompletos",
+        text: "Preencha todos os campos!",
+      });
     }
 
     setLoading(true);
@@ -47,16 +52,23 @@ export default function Login() {
 
       if (!res.ok) {
         setLoading(false);
-        return alert(data.message || "Erro ao logar.");
+        return Swal.fire({
+          icon: "error",
+          title: "Erro ao logar",
+          text: data.message || "Usuário ou senha não registrada. Verifique e tente novamente.",
+        });
       }
 
       localStorage.setItem("token", data.token);
-
       router.push("/uploads");
     } catch (error) {
       console.error("Erro no login:", error);
-      alert("Erro de conexão com o servidor.");
       setLoading(false);
+      Swal.fire({
+        icon: "error",
+        title: "Erro de conexão",
+        text: "Erro de conexão com o servidor.",
+      });
     }
   };
 
@@ -158,7 +170,7 @@ export default function Login() {
 
               {/* Opções */}
               <div className="flex items-center justify-between text-sm">
-              
+
                 <Link href="/forgot-password" className="underline text-[#0c4a6e] hover:text-[#25aff0]">
                   Esqueceu a senha?
                 </Link>
